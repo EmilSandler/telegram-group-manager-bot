@@ -9,7 +9,7 @@ import botData
 
 
 commands = ["start", "help", "setup", "welcome", "setRules", "userLeft", "rules", "admin"]  # Bot commands.
-buttonRegex = r'^[exp|deleteServiceMsg|kickBots|welcomeRules|welcomeMessage|adminReports|delOldWelcome|userLeftMessage]+$'  # Button callback data regex.
+buttonRegex = r'^[exp|deleteServiceMsg|kickBots|welcomeRules|welcomeMessage|adminReports|delOldWelcome|userLeftMessage|punishNum|warnings]+$'  # Button callback data regex.
 mainMenuRegex = r'^[menu|antiFlood|media|antiSpam|reports|userPermissions]+$'   # Main menu buttons callback regex.
 
 
@@ -33,7 +33,8 @@ menu_keyboard = [[["Rules", "", "exp"], ["\U0001F534", "", "0"]],
                  [["Admin Report", "", "adminReports"], ["\U0001F534", "", "5"]],
                  [["Delete old Welcome", "", "delOldWelcome"], ["\U0001F534", "", "6"]],
                  [["User left message", "", "userLeftMessage"], ["\U0001F534", "", "7"]],
-                 [["", "\U00002796", "-"],["0", "","num"],["", "\U00002795", "+"]],
+                 [["", "\U00002796", "-"],["0", "","punishNum"],["", "\U00002795", "+"]],
+                 [["Penalty", "", "warnings"], ["Kick", "\U0001F45E", "penalty"]],
                  [["Back", "\U0001F519", "back"]]]
 
 def get_user_permission(update, context):
@@ -86,7 +87,7 @@ class peaceMakerBot:
         # Callback query handlers.
         self.dp.add_handler(CallbackQueryHandler(self.choose_menu_handler, pattern=mainMenuRegex))
         self.dp.add_handler(CallbackQueryHandler(self.button_info, pattern=buttonRegex))
-        self.dp.add_handler(CallbackQueryHandler(self.menu_button_callback, pattern=r'^[0-9|back|+|-]+$'))
+        self.dp.add_handler(CallbackQueryHandler(self.menu_button_callback, pattern=r'^[0-9|back|+|penalty|-]+$'))
         # Service message handlers.
         self.dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, self.user_join_handler))
         self.dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, self.user_left_handler))
@@ -245,6 +246,7 @@ class peaceMakerBot:
 
     def button_info(self, update, context):
         query = update.callback_query
+        print(query)
         text = botData.button_info(query.data)
         context.bot.answer_callback_query(query["id"], text=text, show_alert=True)
 
@@ -255,9 +257,7 @@ class peaceMakerBot:
         :param context:
         :return:
         """
-
         query = update.callback_query
-        print(query)
         text = "Hello {0}, I am {1} and I'll help you manage and enforce your group rules," \
                "Please select an option"
         if query.data == "back":
@@ -267,13 +267,13 @@ class peaceMakerBot:
                                           reply_markup=InlineKeyboardMarkup(self.main_keyboard))
         elif query.data == "9":
             self.rules_button_ahandler(update, context)
-
         elif query.data == "+" or query.data == "-":
             self.menu_button[8][1].set_button_count(query.data)
             self.show_menu_keyboard(update, context)
-
-
-
+        elif query.data == "penalty":
+            self.menu_button[9][1].set_penalty()
+            self.show_menu_keyboard(update, context)
+            context.bot.answer_callback_query(query["id"], "Chosen penalty: {0}".format(botButton.penalty_name[self.menu_button[9][1].get_button_count()]),short_alert=True)
         else:
             index = int(query.data)
             self.menu_button[index][1].change_button_state_on_off()
@@ -294,7 +294,6 @@ class peaceMakerBot:
         if the Welcome message exists.
         4. If there are saved rules and a Welcome message does not exist, only the rules will be displayed to the user.
         5. Remove the service messages if flag is True
-
         Args:
             :param update: This object represents an incoming update.
             :param context: This is a context object passed to the callback called by telegram.ext.Handler
@@ -362,6 +361,7 @@ class peaceMakerBot:
 
 
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Handlers^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 
 

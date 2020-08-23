@@ -9,6 +9,9 @@ x = [["Menu", "\U0001F6E0", "menu"],
      ["Reports", "\U0001F4E2", "reports"],
      ["User permissions", "\U0001F6B7", "userPermissions"]]
 
+penalty_emojy = ["\U0001F45E", "\U0001F507", "\U0001F6AB"]
+penalty_name = ["Kick", "Silence", "Ban"]
+
 
 class botButton(telegram.InlineKeyboardButton):
 
@@ -17,8 +20,9 @@ class botButton(telegram.InlineKeyboardButton):
         self.button = None
         self.menu = []
         self.state = False
-        self.count = 0
+        self.penalty_count = 0
         self.info = None
+
 
     def init_button(self, button_name, button_emoji, button_callback_data):
         """
@@ -32,7 +36,7 @@ class botButton(telegram.InlineKeyboardButton):
                                                                 emojize(button_emoji) if button_emoji != "" else ""),
                                            callback_data=button_callback_data)
         if button_name.isnumeric():
-            self.count = int(button_name)
+            self.penalty_count = int(button_name)
         return self
 
     def get_button(self):
@@ -62,12 +66,12 @@ class botButton(telegram.InlineKeyboardButton):
         :return:
         """
         if action == "+":
-            self.count += 1
-            self.button.text = self.count
+            self.penalty_count += 1
+            self.button.text = self.penalty_count
         elif action == "-":
-            if self.count >= 1:
-                self.count -= 1
-                self.button.text = self.count
+            if self.penalty_count >= 1:
+                self.penalty_count -= 1
+                self.button.text = self.penalty_count
 
 
     def get_button_count(self):
@@ -75,7 +79,7 @@ class botButton(telegram.InlineKeyboardButton):
         Returns the Integer value on the button text (for digit buttons).
         :return: Integer value of the button text.
         """
-        return self.count
+        return self.penalty_count
 
     def set_button_info(self, info):
         """
@@ -95,6 +99,10 @@ class botButton(telegram.InlineKeyboardButton):
         :return: The state of the button, True or False.
         """
         return self.state
+
+    def set_penalty(self):
+        self.penalty_count = (self.penalty_count + 1) % len(penalty_emojy)
+        self.button.text = "{0}{1}".format(penalty_name[self.penalty_count], penalty_emojy[self.penalty_count])
 
     def change_three_button_state(self, state):
         pass

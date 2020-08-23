@@ -40,4 +40,8 @@ def button_info(data):
     if data == "userLeftMessage":
         text = "On: If userLeft message is set, Sends the message to a user that just left the channel.\n" \
                "Off: Don't send a userLeft message."
+    if data == "punishNum":
+        text = "Number of warnings before the chosen penalty is carried out."
+    if data == "warnings":
+        text = "Choose the penalty that the user will receive for breaking the rules."
     return text
