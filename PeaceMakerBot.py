@@ -33,8 +33,8 @@ menu_keyboard = [[["Rules", "", "exp"], ["\U0001F534", "", "0"]],
                  [["Admin Report", "", "adminReports"], ["\U0001F534", "", "5"]],
                  [["Delete old Welcome", "", "delOldWelcome"], ["\U0001F534", "", "6"]],
                  [["User left message", "", "userLeftMessage"], ["\U0001F534", "", "7"]],
+                 [["", "\U00002796", "-"],["0", "","num"],["", "\U00002795", "+"]],
                  [["Back", "\U0001F519", "back"]]]
-
 
 def get_user_permission(update, context):
     """
@@ -70,6 +70,11 @@ class peaceMakerBot:
         self.updater.idle()
 
     def init_handlers(self):
+        """
+        Initialize handlers for bot commands and for callback query.
+        :return:
+        """
+        # Bot command handlers.
         self.dp.add_handler(CommandHandler(command=commands[0], callback=self.start, filters=Filters.private))
         self.dp.add_handler(CommandHandler(command=commands[1], callback=self.help_command, filters=~Filters.private))
         self.dp.add_handler(CommandHandler(command=commands[2], callback=self.show_main_keyboard, filters=~Filters.private))
@@ -78,11 +83,11 @@ class peaceMakerBot:
         self.dp.add_handler(CommandHandler(command=commands[5], callback=self.set_left_user_message, filters=~Filters.private))
         self.dp.add_handler(CommandHandler(command=commands[6], callback=self.show_rules, filters=~Filters.private))
         self.dp.add_handler(CommandHandler(command=commands[7], callback=self.report_to_admin, filters=~Filters.private))
-
+        # Callback query handlers.
         self.dp.add_handler(CallbackQueryHandler(self.choose_menu_handler, pattern=mainMenuRegex))
         self.dp.add_handler(CallbackQueryHandler(self.button_info, pattern=buttonRegex))
-        self.dp.add_handler(CallbackQueryHandler(self.menu_button_callback, pattern=r'^[0-9|back]+$'))
-
+        self.dp.add_handler(CallbackQueryHandler(self.menu_button_callback, pattern=r'^[0-9|back|+|-]+$'))
+        # Service message handlers.
         self.dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, self.user_join_handler))
         self.dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, self.user_left_handler))
 
@@ -161,25 +166,39 @@ class peaceMakerBot:
 
     def init_menu_keyboard(self):
         """
-        Initializing the menu keyboard.
+        Initializing the menu keyboard, The menu keyboard depends on the menu_keyboard button list.
         :return:
         """
-        ln = len(self.menu_button)
-        if len(self.menu_button) == 0:
-            for buttons in menu_keyboard:
+
+        for btns in menu_keyboard:
+            button_row = []
+            for btn in btns:
+                button_row.append(btn)
+            number_of_buttons = len(button_row)
+            if number_of_buttons == 1:
                 button1 = botButton.botButton()
-                keyboard = button1.init_button(buttons[0][0], buttons[0][1], buttons[0][2])
-                if len(buttons) > 1:
-                    button2 = botButton.botButton()
-                    keyboard2 = button2.init_button(buttons[1][0], buttons[1][1], buttons[1][2])
-                    keyboard = [keyboard, keyboard2]
-                elif len(buttons) == 1:
-                    keyboard = [keyboard]
-                self.menu_button.append(keyboard)
-            for i in range(len(self.menu_button) - 1):
-                self.menu_keyboard_list.append(
-                    [self.menu_button[i][0].get_button(), self.menu_button[i][1].get_button()])
-            self.menu_keyboard_list.append([self.menu_button[ln - 1][0].get_button()])
+                keyboard1 = button1.init_button(button_row[0][0], button_row[0][1], button_row[0][2])
+                self.menu_button.append(keyboard1)
+                self.menu_keyboard_list.append([keyboard1.get_button()])
+            if number_of_buttons == 2:
+                button1 = botButton.botButton()
+                button2 = botButton.botButton()
+                keyboard1 = button1.init_button(button_row[0][0], button_row[0][1], button_row[0][2])
+                keyboard2 = button2.init_button(button_row[1][0], button_row[1][1], button_row[1][2])
+                keyboard1 = [keyboard1,keyboard2]
+                self.menu_button.append(keyboard1)
+                self.menu_keyboard_list.append([keyboard1[0].get_button(), keyboard1[1].get_button()])
+            if number_of_buttons == 3:
+                button1 = botButton.botButton()
+                button2 = botButton.botButton()
+                button3 = botButton.botButton()
+                keyboard1 = button1.init_button(button_row[0][0], button_row[0][1], button_row[0][2])
+                keyboard2 = button2.init_button(button_row[1][0], button_row[1][1], button_row[1][2])
+                keyboard3 = button3.init_button(button_row[2][0], button_row[2][1], button_row[2][2])
+                keyboard1 = [keyboard1, keyboard2, keyboard3]
+                self.menu_button.append(keyboard1)
+                self.menu_keyboard_list.append([keyboard1[0].get_button(), keyboard1[1].get_button(), keyboard1[2].get_button()])
+
 
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Initialization^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -236,7 +255,9 @@ class peaceMakerBot:
         :param context:
         :return:
         """
+
         query = update.callback_query
+        print(query)
         text = "Hello {0}, I am {1} and I'll help you manage and enforce your group rules," \
                "Please select an option"
         if query.data == "back":
@@ -246,6 +267,12 @@ class peaceMakerBot:
                                           reply_markup=InlineKeyboardMarkup(self.main_keyboard))
         elif query.data == "9":
             self.rules_button_ahandler(update, context)
+
+        elif query.data == "+" or query.data == "-":
+            self.menu_button[8][1].set_button_count(query.data)
+            self.show_menu_keyboard(update, context)
+
+
 
         else:
             index = int(query.data)
@@ -337,4 +364,7 @@ class peaceMakerBot:
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Handlers^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-temp = peaceMakerBot("Your token here!")
+
+
+
+temp = peaceMakerBot("Your bot token here!")
