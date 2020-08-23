@@ -105,6 +105,7 @@ class botButton(telegram.InlineKeyboardButton):
         self.button.text = "{0}{1}".format(penalty_name[self.penalty_count], penalty_emojy[self.penalty_count])
 
     def change_three_button_state(self, state):
+
         pass
 
 # temp = botButton()

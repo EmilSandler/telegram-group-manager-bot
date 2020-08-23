@@ -44,4 +44,5 @@ def button_info(data):
         text = "Number of warnings before the chosen penalty is carried out."
     if data == "warnings":
         text = "Choose the penalty that the user will receive for breaking the rules."
+
     return text
