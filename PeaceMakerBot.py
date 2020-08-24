@@ -37,6 +37,23 @@ menu_keyboard = [[["Rules", "", "exp"], ["\U0001F534", "", "0"]],
                  [["Penalty", "", "warnings"], ["Kick", "\U0001F45E", "penalty"]],
                  [["Back", "\U0001F519", "back"]]]
 
+media_keyboard = [[["Images", "", "images"],["","\U0001F534", "i"]],
+                  [["Music", "", "music"],["","\U0001F534", "m"]],
+                  [["Links", "", "links"],["","\U0001F534", "l"]],
+                  [["Records", "", "recirds"],["","\U0001F534", "r"]],
+                  [["Videos", "", "videos"],["","\U0001F534", "v"]],
+                  [["Contacts", "", "contacts"],["","\U0001F534", "c"]],
+                  [["GIF'S", "", "gif"],["","\U0001F534", "g"]],
+                  [["Video Records", "", "videoRecord"],["","\U0001F534", "vc"]],
+                  [["Locations", "", "locations"],["","\U0001F534", "loc"]],
+                  [["Games", "", "games"],["","\U0001F534", "gms"]],
+                  [["Stickers", "", "stickers"],["","\U0001F534", "st"]],
+                  [["Files", "", "fils"],["","\U0001F534", "f"]],
+                  [["", "\U00002796", "minus"],["0", "","punishNum"],["", "\U00002795", "plus"]],
+                  [["Penalty", "", "warnings"], ["Kick", "\U0001F45E", "penalty"]],
+                  [["Back", "\U0001F519", "back"]]]
+
+
 def get_user_permission(update, context):
     """
     Checks the permition a user have in the group and return True if the user is admin or creator,
@@ -57,15 +74,17 @@ class peaceMakerBot:
         self.updater = Updater(bot_token, use_context=True)
         self.dp = self.updater.dispatcher
         self.main_keyboard = []
-        self.menu_keyboard_list = []
-        self.menu_button = []
+
+
+        self.menu_button, self.menu_keyboard_list = self.init_menu_keyboard(menu_keyboard)
+        self.media_button, self.media_keyboard_list = self.init_menu_keyboard(media_keyboard)
         self.welcome_message = None
         self.rule_message = None
         self.old_welcome_message = None
         self.userLeftMessage = None
         self.init_handlers()
         self.init_main_keyboard()
-        self.init_menu_keyboard()
+
         # Start the bot
         self.updater.start_polling()
         self.updater.idle()
@@ -165,13 +184,15 @@ class peaceMakerBot:
                 keyboard = button.init_button(btn[0], btn[1], btn[2]).get_button()
                 self.main_keyboard.append([keyboard])
 
-    def init_menu_keyboard(self):
+    def init_menu_keyboard(self, keyboard):
         """
         Initializing the menu keyboard, The menu keyboard depends on the menu_keyboard button list.
         :return:
         """
+        button_obj = []
+        keyboard_list = []
 
-        for btns in menu_keyboard:
+        for btns in keyboard:
             button_row = []
             for btn in btns:
                 button_row.append(btn)
@@ -179,16 +200,16 @@ class peaceMakerBot:
             if number_of_buttons == 1:
                 button1 = botButton.botButton()
                 keyboard1 = button1.init_button(button_row[0][0], button_row[0][1], button_row[0][2])
-                self.menu_button.append(keyboard1)
-                self.menu_keyboard_list.append([keyboard1.get_button()])
+                button_obj.append(keyboard1)
+                keyboard_list.append([keyboard1.get_button()])
             if number_of_buttons == 2:
                 button1 = botButton.botButton()
                 button2 = botButton.botButton()
                 keyboard1 = button1.init_button(button_row[0][0], button_row[0][1], button_row[0][2])
                 keyboard2 = button2.init_button(button_row[1][0], button_row[1][1], button_row[1][2])
                 keyboard1 = [keyboard1,keyboard2]
-                self.menu_button.append(keyboard1)
-                self.menu_keyboard_list.append([keyboard1[0].get_button(), keyboard1[1].get_button()])
+                button_obj.append(keyboard1)
+                keyboard_list.append([keyboard1[0].get_button(), keyboard1[1].get_button()])
             if number_of_buttons == 3:
                 button1 = botButton.botButton()
                 button2 = botButton.botButton()
@@ -197,9 +218,11 @@ class peaceMakerBot:
                 keyboard2 = button2.init_button(button_row[1][0], button_row[1][1], button_row[1][2])
                 keyboard3 = button3.init_button(button_row[2][0], button_row[2][1], button_row[2][2])
                 keyboard1 = [keyboard1, keyboard2, keyboard3]
-                self.menu_button.append(keyboard1)
-                self.menu_keyboard_list.append([keyboard1[0].get_button(), keyboard1[1].get_button(), keyboard1[2].get_button()])
-
+                button_obj.append(keyboard1)
+                keyboard_list.append([keyboard1[0].get_button(), keyboard1[1].get_button(), keyboard1[2].get_button()])
+                print(button_obj)
+                print(keyboard_list)
+        return button_obj, keyboard_list
 
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Initialization^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -236,6 +259,19 @@ class peaceMakerBot:
                                           ,reply_markup=InlineKeyboardMarkup(self.menu_keyboard_list))
         except TelegramError as err:
             print(err)
+
+    def show_media_keyboard(self, update, context):
+        try:
+            query = update.callback_query
+            text = "Click the buttons on the left to get details about each option" \
+                   "\nOR\nClick the buttons on the right to turn On/Of the option"
+            context.bot.edit_message_text(chat_id=query.message.chat.id,
+                                          message_id=query.message.message_id,
+                                          text=text
+                                          ,reply_markup=InlineKeyboardMarkup(self.media_keyboard_list))
+        except TelegramError as err:
+            print(err)
+
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Show and Print^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -243,6 +279,8 @@ class peaceMakerBot:
         query = update.callback_query
         if query.data == "menu":
             self.show_menu_keyboard(update, context)
+        elif query.data == "media":
+            self.show_media_keyboard(update, context)
 
     def button_info(self, update, context):
         query = update.callback_query
@@ -367,4 +405,4 @@ class peaceMakerBot:
 
 
 
-temp = peaceMakerBot("Your bot token here")
+temp = peaceMakerBot("1344100141:AAEmYV0UjxZTMy2o8DGKAxUYHGzUcPgy4TY")
