@@ -405,4 +405,4 @@ class peaceMakerBot:
 
 
 
-temp = peaceMakerBot("1344100141:AAEmYV0UjxZTMy2o8DGKAxUYHGzUcPgy4TY")
+temp = peaceMakerBot("Your token here")
